@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Colorful To‑Do Web App • Task 04</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg1:#845EC2; --bg2:#FF6F91; --bg3:#00C9A7; --bg4:#F9F871;
+      --card: rgba(255,255,255,0.14);
+      --muted: rgba(255,255,255,0.7);
+      --white:#fff; --black:#121212;
+      --shadow: 0 10px 30px rgba(0,0,0,.25);
+      --radius: 18px;
+    }
+    *{ box-sizing: border-box; }
+    html, body{ height:100%; }
+    body{
+      margin:0; font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color: var(--white);
+      background: radial-gradient(1200px 600px at 10% 10%, var(--bg4), transparent 60%),
+                  radial-gradient(900px 900px at 90% 10%, var(--bg3), transparent 55%),
+                  radial-gradient(1200px 900px at 0% 100%, var(--bg1), transparent 60%),
+                  linear-gradient(135deg, #0f0c29, #302b63 40%, #24243e);
+      background-attachment: fixed;
+      overflow: hidden;
+    }
+    .app{
+      display:grid; grid-template-columns: 280px 1fr; gap:18px; height:100%; padding:18px; backdrop-filter: blur(2px);
+    }
+    .card{ background: var(--card); border:1px solid rgba(255,255,255,0.18); border-radius: var(--radius); box-shadow: var(--shadow); }
+    header{
+      grid-column: 1 / -1; display:flex; align-items:center; justify-content: space-between; padding:14px 18px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px; font-weight:700; letter-spacing:.5px; text-transform:uppercase;
+    }
+    .brand .logo{
+      width:40px; height:40px; border-radius:12px; display:grid; place-items:center; font-weight:700; background: linear-gradient(135deg, var(--bg2), var(--bg3)); color:#111;
+    }
+    .pill{
+      padding:8px 12px; border-radius: 999px; background: linear-gradient(135deg, rgba(255,255,255,0.25), rgba(255,255,255,0.05)); font-size:12px; color: var(--muted); border:1px solid rgba(255,255,255,0.25);
+    }
+
+    /* Sidebar */
+    .sidebar{ padding:16px; display:flex; flex-direction:column; gap:14px; }
+    .sidebar h3{ margin:4px 0 0; font-size:14px; font-weight:600; text-transform:uppercase; color:var(--muted); letter-spacing:.8px; }
+    .list{
+      margin-top:4px; display:flex; flex-direction:column; gap:8px; max-height: calc(100vh - 260px); overflow:auto; padding-right:6px;
+    }
+    .list button{
+      width:100%; text-align:left; padding:10px 12px; border-radius:12px; border:1px solid transparent; background: rgba(255,255,255,0.08); color:var(--white);
+      cursor:pointer; transition: .2s transform, .2s background;
+    }
+    .list button:hover{ transform: translateY(-1px); background: rgba(255,255,255,0.16) }
+    .list button.active{ background: linear-gradient(135deg, rgba(255,255,255,.22), rgba(255,255,255,.06)); border-color: rgba(255,255,255,0.35); }
+
+    .add-list{ display:flex; gap:8px; }
+    input, select{
+      background: rgba(255,255,255,0.10); color:var(--white); border:1px solid rgba(255,255,255,0.25); border-radius:12px; padding:10px 12px; outline:none;
+    }
+    input::placeholder{ color: rgba(255,255,255,0.6); }
+    .btn{
+      border:none; border-radius:12px; padding:10px 14px; font-weight:600; cursor:pointer; color:#111; background: linear-gradient(135deg, var(--bg2), var(--bg3));
+      transition:.2s transform, .2s box-shadow; box-shadow: var(--shadow);
+    }
+    .btn:hover{ transform: translateY(-1px) scale(1.01); }
+
+    /* Main */
+    .main{ padding:16px; display:grid; grid-template-rows: auto 1fr; gap:14px; min-width:0; }
+    .compose{ display:grid; grid-template-columns: 1.4fr .9fr .8fr auto; gap:10px; align-items:center; padding:12px; }
+    .tasks{ padding:12px; overflow:auto; border-top-left-radius:0; }
+    .tasks ul{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; }
+    .task{
+      display:grid; grid-template-columns: 28px 1fr .8fr .8fr auto; gap:10px; align-items:center; padding:12px; border-radius:14px;
+      border:1px solid rgba(255,255,255,.18); background: rgba(0,0,0,0.22);
+    }
+    .task.completed{ opacity: .55; text-decoration: line-through; }
+    .task .title{ font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .task .meta{ font-size:12px; color: var(--muted); }
+    .icon-btn{
+      background: transparent; border:1px solid rgba(255,255,255,0.28); color:var(--white); padding:8px 10px; border-radius:10px; cursor:pointer;
+    }
+    .icon-btn:hover{ background: rgba(255,255,255,0.12); }
+
+    .empty{ text-align:center; color:var(--muted); padding:40px 0; }
+
+    /* Responsive */
+    @media (max-width: 900px){
+      .app{ grid-template-columns: 1fr; }
+      .sidebar{ order:2; }
+      .compose{ grid-template-columns: 1.2fr .9fr .9fr auto; }
+    }
+    @media (max-width: 560px){
+      .compose{ grid-template-columns: 1fr; }
+      .task{ grid-template-columns: 28px 1fr auto; }
+      .task .when, .task .priority{ display:none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+  
+
+    <!-- Sidebar / Lists -->
+    <aside class="sidebar card">
+      <h3>Lists</h3>
+      <div class="list" id="lists"></div>
+      <form class="add-list" id="listForm">
+        <input required id="listName" placeholder="New list name" />
+        <button class="btn" type="submit">Add</button>
+      </form>
+    </aside>
+
+    <!-- Main / Tasks -->
+    <main class="main">
+      <section class="compose card">
+        <input id="taskTitle" placeholder="What do you need to do?" />
+        <input type="datetime-local" id="taskWhen" />
+        <select id="taskPriority" title="Priority">
+          <option value="low">Low Priority</option>
+          <option value="medium" selected>Medium Priority</option>
+          <option value="high">High Priority</option>
+        </select>
+        <button class="btn" id="addTaskBtn">Add Task</button>
+      </section>
+
+      <section class="tasks card">
+        <ul id="taskList"></ul>
+        <div class="empty" id="emptyState" hidden>Nothing here yet. Add your first task! 🎯</div>
+      </section>
+    </main>
+  </div>
+
+  <template id="taskTemplate">
+    <li class="task">
+      <input type="checkbox" class="toggle" />
+      <div class="title"></div>
+      <div class="when meta"></div>
+      <div class="priority meta"></div>
+      <div class="actions" style="display:flex; gap:6px;">
+        <button class="icon-btn edit">Edit</button>
+        <button class="icon-btn del">Delete</button>
+      </div>
+    </li>
+  </template>
+
+  <script>
+    // ====== Simple LocalStorage helpers ======
+    const storageKey = 'skillcraft.todo.v1';
+    const save = (data) => localStorage.setItem(storageKey, JSON.stringify(data));
+    const load = () => JSON.parse(localStorage.getItem(storageKey) || 'null');
+
+    // ====== App State ======
+    let state = load() || {
+      lists: [ { id: crypto.randomUUID(), name: 'My Tasks', tasks: [] } ],
+      activeListId: null
+    };
+    if(!state.activeListId) state.activeListId = state.lists[0].id;
+
+    // ====== DOM ======
+    const els = {
+      lists: document.getElementById('lists'),
+      listForm: document.getElementById('listForm'),
+      listName: document.getElementById('listName'),
+      taskTitle: document.getElementById('taskTitle'),
+      taskWhen: document.getElementById('taskWhen'),
+      taskPriority: document.getElementById('taskPriority'),
+      addTaskBtn: document.getElementById('addTaskBtn'),
+      taskList: document.getElementById('taskList'),
+      taskTemplate: document.getElementById('taskTemplate'),
+      emptyState: document.getElementById('emptyState'),
+      stats: document.getElementById('stats')
+    };
+
+    // ====== Rendering ======
+    function renderLists(){
+      els.lists.innerHTML = '';
+      state.lists.forEach(l => {
+        const b = document.createElement('button');
+        b.textContent = `${l.name} (${l.tasks.length})`;
+        b.className = state.activeListId === l.id ? 'active' : '';
+        b.onclick = () => { state.activeListId = l.id; save(state); render(); };
+        els.lists.appendChild(b);
+      });
+    }
+
+    function renderTasks(){
+      const list = getActiveList();
+      els.taskList.innerHTML = '';
+      if(!list || list.tasks.length === 0){
+        els.emptyState.hidden = false; els.stats.textContent = '0 tasks'; return;
+      }
+      els.emptyState.hidden = true;
+      const frag = document.createDocumentFragment();
+      list.tasks
+        .slice()
+        .sort((a,b)=>{
+          const p = {high:2, medium:1, low:0};
+          return (p[b.priority]-p[a.priority]) || (a.completed - b.completed) || (new Date(a.when||0)-new Date(b.when||0));
+        })
+        .forEach(task => frag.appendChild(renderTask(task)));
+      els.taskList.appendChild(frag);
+      updateStats();
+    }
+
+    function renderTask(task){
+      const li = els.taskTemplate.content.firstElementChild.cloneNode(true);
+      const title = li.querySelector('.title');
+      const when = li.querySelector('.when');
+      const priority = li.querySelector('.priority');
+      const toggle = li.querySelector('.toggle');
+      const editBtn = li.querySelector('.edit');
+      const delBtn = li.querySelector('.del');
+
+      li.dataset.id = task.id;
+      title.textContent = task.title;
+      when.textContent = task.when ? new Date(task.when).toLocaleString() : '—';
+      priority.textContent = task.priority.toUpperCase();
+      li.classList.toggle('completed', !!task.completed);
+      toggle.checked = !!task.completed;
+
+      toggle.onchange = () => { task.completed = toggle.checked; persistAndRender(); };
+      delBtn.onclick = () => { removeTask(task.id); };
+      editBtn.onclick = () => editTaskPrompt(task);
+
+      return li;
+    }
+
+    function updateStats(){
+      const list = getActiveList();
+      if(!list){ els.stats.textContent = '0 tasks'; return; }
+      const total = list.tasks.length;
+      const done = list.tasks.filter(t=>t.completed).length;
+      els.stats.textContent = `${done}/${total} completed`;
+    }
+
+    function render(){
+      renderLists();
+      renderTasks();
+      save(state);
+    }
+
+    // ====== CRUD ======
+    function getActiveList(){ return state.lists.find(l=>l.id===state.activeListId); }
+
+    function addList(name){
+      if(!name.trim()) return;
+      state.lists.push({ id: crypto.randomUUID(), name: name.trim(), tasks: [] });
+      state.activeListId = state.lists[state.lists.length-1].id;
+      persistAndRender();
+    }
+
+    function addTask(title, when, priority){
+      const list = getActiveList();
+      if(!list || !title.trim()) return;
+      list.tasks.push({ id: crypto.randomUUID(), title: title.trim(), when: when || null, priority: priority || 'medium', completed:false });
+      persistAndRender();
+    }
+
+    function removeTask(id){
+      const list = getActiveList();
+      list.tasks = list.tasks.filter(t=>t.id!==id);
+      persistAndRender();
+    }
+
+    function editTaskPrompt(task){
+      const title = prompt('Edit task title:', task.title);
+      if(title===null) return; // cancelled
+      const when = prompt('Edit date/time (YYYY-MM-DDTHH:MM) or blank:', task.when || '');
+      const priority = prompt('Priority: low | medium | high', task.priority);
+      task.title = title.trim() || task.title;
+      task.when = (when && when.trim()) ? when : null;
+      task.priority = ['low','medium','high'].includes((priority||'').toLowerCase()) ? priority.toLowerCase() : task.priority;
+      persistAndRender();
+    }
+
+    function persistAndRender(){ save(state); render(); }
+
+    // ====== Events ======
+    els.listForm.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      addList(els.listName.value);
+      els.listName.value = '';
+    });
+
+    els.addTaskBtn.addEventListener('click', ()=>{
+      addTask(els.taskTitle.value, els.taskWhen.value, els.taskPriority.value);
+      els.taskTitle.value = '';
+      els.taskWhen.value = '';
+      els.taskPriority.value = 'medium';
+    });
+
+    // Add with Enter in title field
+    els.taskTitle.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); els.addTaskBtn.click(); }});
+
+    // ====== First render ======
+    render();
+  </script>
+</body>
+</html>
